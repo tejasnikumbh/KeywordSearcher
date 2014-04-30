@@ -1,0 +1,49 @@
+body{
+        background-color:black;
+      }
+      div{
+        border:0px solid grey;
+      }
+      #container{
+        border:1px dashed grey; 
+        border-radius:10px;
+        background-color:white;
+        height:1024px;
+        width:768px;
+        margin:auto;
+        margin-top:20px;
+      }
+      
+     .header{
+        border:0px solid grey; 
+        border-radius:10px;
+        background-color:white;
+        height:30px;
+        width:700px;
+        margin:auto;
+        margin-top:20px;
+        font-family:verdana;
+        font-weight:bold;
+        font-size:25px;
+        color:grey;
+        text-align:center;
+      }
+     
+     .content{
+       border:1px dashed grey;
+       border-radius:10px;
+       height:500px;
+       margin:20px;
+      }
+
+     .query{
+       border:0px solid grey;
+       border-radius:10px;
+       margin:20px;       
+       height:150px;
+      } 
+     .result_title{
+       border:1px dashed green;
+       border-radius:20px;
+       margin:10px; 
+      }

@@ -1,0 +1,88 @@
+<html>
+  <head>
+    <title>Keyword Searcher</title>
+    <link rel='stylesheet' href='css/style.css'/>
+    <script src='js/KeywordSearcher.js'></script>
+    <script src='js/jquery.js'></script>
+    <script type='text/javascript'>
+      $(document).ready(function(){
+        //alert("Hola");
+        $('#submit').click(function(){
+          /* Getting the values from the form input */
+          var queryString = $('#query').val();
+          var num_results = parseInt($('#num_results').val());
+          alert(queryString + " : "+ num_results);
+
+          /* TEST_DATA for the Keyword Searcher */  
+var TEST_DATA = [
+	{
+		title: "Payments",
+		keywords: "payments, business terms, economics terminology, accounting, financial transaction",
+		content: "A payment is the transfer of money from one party (such as a person or company) to another. A payment is usually made in exchange for the provision of goods, services or both, or to fulfill a legal obligation. The simplest and oldest form of payment is barter, the exchange of one good or service for another. In the modern world, common means of payment by an individual include money, cheque, debit, credit, or bank transfer, and in trade such payments are frequently preceded by an invoice or result in a receipt. However, there are no arbitrary limits on the form a payment can take and thus in complex transactions between businesses, payments may take the form of stock or other more complicated arrangements. In law, the payer is the party making a payment while the payee is the party receiving the paymen"
+	} ,
+	{
+		title: "Chat",
+		keywords: "internet culture, online chat, chat, internet relay chat, internet chat, shoutbox",
+		content: "A web chat is a system that allows users to communicate in real time using easily accessible web interfaces. It is a type of internet online chat distinguished by its simplicity and accessibility to users who do not wish to take the time to install and learn to use specialized chat software. This trait allows users instantaneous access and only a web browser is required to chat. Users will always get the latest version of a chat service because no software installation or updates are required."
+	} ,
+	{
+		title: "Experimenter's Regress",
+		keywords: "experimenter's regress, scientific method, cognitive biases",
+		content: "In science, experimenter's regress refers to a loop of dependence between theory and evidence. In order to judge whether evidence is erroneous we must rely on theory-based expectations, and to judge the value of competing theories we rely on evidence, but to detect errors in experiments we must be aware of theoretical predictions, etc. Cognitive bias affects experiments, and experiments determine which theory is valid. This issue is particularly important in new fields of science where there is no community consensus regarding the relative values of various competing theories, and where sources of experimental error are not well known. If experimenter's regress acts a positive feedback system, it can be a source of pathological science. An experimenter's strong belief in a new theory produces confirmation bias, and any biased evidence they obtain then strengthens their belief in that particular theory. Neither individual researchers nor entire scientific communities are immune to this effect; see N-rays and Polywater."
+	} ,
+	{
+		title: "Instruction",
+		keywords: "the dog is barking",
+		content: "Instruction set architecture is distinguished from the microarchitecture, which is the set of processor design techniques used to implement the instruction set. Computers with different microarchitectures can share a common instruction set. For example, the Intel Pentium and the AMD Athlon implement nearly identical versions of the x86 instruction set, but have radically different internal designs. Some virtual machines that support bytecode for Smalltalk, the Java virtual machine, and Microsoft's Common Language Runtime virtual machine as their ISA implement it by translating the bytecode for commonly used code paths into native machine code, and executing less-frequently-used code paths by interpretation (see: Just-in-time compilation); Transmeta implemented the x86 instruction set atop VLIW processors in the same fashion."
+	} ,
+	{
+		title: "Node",
+		keywords: "graph theory objects, node, vertex",
+		content: "In graph theory, a vertex (plural vertices) or node is the fundamental unit of which graphs are formed: an undirected graph consists of a set of vertices and a set of edges (unordered pairs of vertices), while a directed graph consists of a set of vertices and a set of arcs (ordered pairs of vertices). In a diagram of a graph, a vertex is usually represented by a circle with a label, and an edge is represented by a line or arrow extending from one vertex to another. From the point of view of graph theory, vertices are treated as featureless and indivisible objects, although they may have additional structure depending on the application from which the graph arises; for instance, a semantic network is a graph in which the vertices represent concepts or classes of objects. The two vertices forming an edge are said to be the endpoints of this, and the edge is said to be incident to the vertices. A vertex w is said to be adjacent to another vertex v if the graph contains an edge (v,w). The neighborhood of a vertex v is an induced subgraph of the graph, formed by all vertices adjacent to v."
+	} ,
+	{
+		title: "Edge",
+		keywords: "edge, elementary geometry, multi-dimensional geometry, polytopes, elementary geometry stubs",
+		content: "In geometry, an edge is a line segment joining two adjacent vertices in a polygon. Thus applied, an edge is a connector for a one-dimensional line segment and two zero-dimensional objects. A planar closed sequence of edges forms a polygon (and a face). In a polyhedron, exactly two faces meet at every edge, while in higher dimensional polytopes, three or more faces meet at an edge."
+	} ,
+	{
+		title: "Flow Network",
+		keywords: "flow network, network flow, graph algorithms, operations research, directed graphs",
+		content: "In graph theory, a flow network (also known as a transportation network) is a directed graph where each edge has a capacity and each edge receives a flow. The amount of flow on an edge cannot exceed the capacity of the edge. Often in Operations Research, a directed graph is called a network, the vertices are called nodes and the edges are called arcs. A flow must satisfy the restriction that the amount of flow into a node equals the amount of flow out of it, except when it is a source, which has more outgoing flow, or sink, which has more incoming flow. A network can be used to model traffic in a road system, fluids in pipes, currents in an electrical circuit, or anything similar in which something travels through a network of nodes."
+	} ,
+];
+
+          /* Creating a new keySearcher */
+          var keyword_search = new KeywordSearcher(TEST_DATA);
+          /* Searching for the keyword entered */
+          var search_results = keyword_search.searchData(queryString, num_results);
+         
+          /* Displaying the results after previous cleanups*/
+          $('.content').html("");
+          for(var i=0;i<search_results.length;i++){
+            $('.content').append("<div class='result_title'> Result Title : "+search_results[i].title+ " : "+search_results[i].score+"</div>");
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id='container'>
+
+      <div class='header'>
+         Keyword Searcher!
+      </div>
+
+      <div class='content'>
+         
+      </div>
+
+      <div class='query'>
+        Query Name : <input type='text' id='query'></input> <br/><br/>
+        Number of results : <input type='text' id='num_results'></input> <br/>
+        <button id='submit'>Submit Query</button>
+      </div>
+
+    </div>
+  </body>
+</html>

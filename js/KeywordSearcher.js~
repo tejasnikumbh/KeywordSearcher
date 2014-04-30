@@ -1,0 +1,226 @@
+/*
+ * File: KeywordSearcher.js
+ * ----------------------------------------------------------------------------------------------------------
+ * Description: A small JavaScript object to search through a glossary and return the most relevant results.
+ * Last Edited: 2013-07-09
+ */
+
+
+/* 
+ * Function : throwError
+ * -----------------------------------------------------------------------------------
+ * Throws an error with the message being the string prompt passed in as the argument.
+ */
+
+  function throwError(errorPrompt){
+    throw new Error(errorPrompt);
+  }
+
+/* 
+ * Function : levenshteinDistance
+ * -------------------------------------------------------------------------------------------------------------
+ * Calculates and returns the minimum number of edits required to transit from one string to another, either by
+ * deletion,insertion or substitution. Representative of the similarity between strings. Less the value returned,
+ * more similar the strings.
+ */
+  function levenshteinDistance(a, b){
+   
+    if(a.length == 0) return b.length; 
+    if(b.length == 0) return a.length; 
+ 
+    var matrix = [];
+ 
+    // increment along the first column of each row
+    var i;
+    for(i = 0; i <= b.length; i++){
+      matrix[i] = [i];
+    }
+ 
+    // increment each column in the first row
+    var j;
+    for(j = 0; j <= a.length; j++){
+      matrix[0][j] = j;
+    }
+ 
+    // Fill in the rest of the matrix
+    for(i = 1; i <= b.length; i++){
+      for(j = 1; j <= a.length; j++){
+        if(b.charAt(i-1) == a.charAt(j-1)){
+          matrix[i][j] = matrix[i-1][j-1];
+        }else {
+        matrix[i][j] = Math.min(matrix[i-1][j-1] + 1, // substitution
+                       Math.min(matrix[i][j-1] + 1,   // insertion
+                                matrix[i-1][j] + 1)); // deletion
+      }
+    }
+  }
+ 
+  return matrix[b.length][a.length];
+  }
+
+/* 
+ * Function : compareScores
+ * -------------------------------------------------------------------------------------------------
+ * A comparison function that compares two objects based on the value of their property named scores 
+ */
+
+  function compareScores(obj1,obj2){
+    return obj1.score>obj2.score;
+  }
+
+/* 
+ * Constructor : KeyWordSearcher
+ * -----------------------------------------------------------------------------------------------
+ * Constructs an object that processes the given search_array and creates a new element array with
+ * an associated keyword datastructure [An array of keywords, in this case].
+ */
+
+  var KeywordSearcher = function(search_array){
+    /* Perform check to ensure array is in expected format. */
+       for(var i=0;i<search_array.length;i++){
+         var propIndex = 0;
+         for(var property in search_array[i]){
+           /* Checking whether property names confine to format specified */
+           switch(propIndex){
+             case 0:
+               if(!(property.toLowerCase()=="title"))
+                 throwError("Unacceptable Test Data format...");
+               break;
+             case 1:
+               if(!(property.toLowerCase()=="keywords"||property.toLowerCase()=="keyword"))
+                 throwError("Unacceptable Test Data format...");
+               break;
+             case 2:
+               if(!(property.toLowerCase()=="content"))
+                 throwError("Unacceptable Test Data format...");
+               break;
+             default:
+               throwError("Unacceptable Test Data format...");
+           }
+           propIndex++;
+         }
+       }	
+
+    /* Creating a processed_search_array property for the object */
+       this.processed_search_array = search_array;
+
+    /* Tokenizing the 'keywords' string, and associating it with each object in search array */
+       for(var i=0;i<search_array.length;i++){
+       /* Assuming that the keywords in the object are comma separated */ 
+          var keywordTokens = search_array[i]["keywords"].toLowerCase().split(',');
+          /* Adding a new property to create a processed_search_array array */
+             for(var j=0;j<keywordTokens.length;j++)
+               keywordTokens[j] = keywordTokens[j].trim();
+          /* Storing the keyword tokens as a property in the processed_search_array array */
+               this.processed_search_array[i].keywordTokens = keywordTokens;
+       }	
+   }
+
+
+/* 
+ * Method : searchData
+ * Prototype  : KeywordSearcher
+ * ---------------------------------------------------------------------------------------------------
+ * Returns an array of top x results, based on the provided query, where is x is the number passed in.
+ * Querying is done on the corresponding KeySearcher object.
+ */
+
+  KeywordSearcher.prototype.searchData = function(query, num_results){
+    /* Creating an array of the query words [tokens], as given above.*/
+       var queryWords = query.toLowerCase().split(' ');
+       /* Examining each element in the processed_search_array to get metric score for each */
+       for(var i=0;i<this.processed_search_array.length;i++){
+         var curScore = 0; 
+         curScore += this.calculateMatchMetric(queryWords,this.processed_search_array[i]);
+         this.processed_search_array[i].score = curScore;
+       }
+         
+       /* Sorting the processed_search_array according to the value of scores */
+       this.processed_search_array.sort(compareScores);
+  
+       /* Storing the top 'num_results' elements */	
+       var arrayToReturn = [] ;
+       var count = 0;
+       var limit = num_results>this.processed_search_array.length?this.processed_search_array.length:num_results;
+       while(count<num_results){
+         arrayToReturn.push(this.processed_search_array[count]);
+         count++;
+       }
+       	
+       /* Returning the top num_results results */
+       return arrayToReturn;
+  }
+
+/* 
+ * Method : calculateMatchMetric
+ * ---------------------------------------------------------------------------------------------------------------
+ * Calculates the match metric based on the levenshteinDistance algorithm, which indicates the similarity between
+ * two strings.
+ */
+
+  KeywordSearcher.prototype.calculateMatchMetric = function(processed_query, search_content){
+    var score = 0;
+
+    var tempScoreTitle = 0;
+    var tWeight = 1;
+
+    var tempScoreKeywords = 0;
+    var kWeight = 1;
+		
+    var tempScoreContent = 0; 
+    var cWeight = 1;
+
+    /* Score calculation for similarity with title */
+    
+    for(var i=0;i<processed_query.length;i++){ 
+      /* Query tokens taken one at a time */
+      tempScoreTitle+=levenshteinDistance(processed_query[i],search_content.title.toLowerCase());
+      /* Query tokens taken two at a time */
+      if((i+1)<processed_query.length)  
+        tempScoreTitle+=levenshteinDistance(processed_query[i]+processed_query[i+1],search_content.title.toLowerCase());
+    }
+    score+=tempScoreTitle*tWeight;
+    
+    /* Score calculation for similarity with keywords */
+    for(var i=0;i<processed_query.length;i++){
+      tempScoreKeywords=0;
+      /* Query tokens taken one at a time */ 
+        for(var j=0;j<search_content["keywordTokens"].length;j++)
+          tempScoreKeywords+=levenshteinDistance(processed_query[i],search_content["keywordTokens"][j]);
+        /* Averages out on the keywords, so that there is no number of keywords bias */
+        score+=kWeight*(tempScoreKeywords/search_content["keywordTokens"].length);
+
+      /* Query tokens taken two at a time */
+        if((i+1)<processed_query.length){
+          for(var j=0;j<search_content["keywordTokens"].length;j++)
+            tempScoreKeywords+=levenshteinDistance(processed_query[i]+processed_query[i+1],search_content["keywordTokens"][j]);
+          /* Averages out on the keywords, so that there is no number of keywords bias */
+          score+=kWeight*(tempScoreKeywords/search_content["keywordTokens"].length);
+        }  
+     }
+    
+    /* Score calculation for similarity with content */
+    var contentArr = search_content["content"].split(" ");
+    for(var i=0;i<processed_query.length;i++){
+      tempScoreContent=0;
+      /* Query tokens taken one at a time */ 
+        for(var j=0;j<contentArr.length;j++)
+          tempScoreContent+=levenshteinDistance(processed_query[i],contentArr[j]);
+        /* Averages out on the keywords, so that there is no number of keywords bias */
+        score+=cWeight*(tempScoreContent/contentArr.length);
+      
+      /* Query tokens taken two at a time */
+        if((i+1)<processed_query.length){
+          for(var j=0;j<contentArr.length;j++)
+            tempScoreContent+=levenshteinDistance(processed_query[i]+processed_query[i+1],contentArr[j]);
+            /* Averages out on the keywords, so that there is no number of keywords bias */
+            score+=cWeight*(tempScoreContent/contentArr.length);
+        }  
+    
+    }
+      
+    return Math.ceil(score);  
+  }
+
+
+
